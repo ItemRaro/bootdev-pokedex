@@ -1,10 +1,12 @@
 package main
 
-import pokeapi "shiva.ddns.net/marcusvinicius/pokedex/internal"
+import (
+	"shiva.ddns.net/marcusvinicius/pokedex/internal/pokeapi"
+)
 
 type config struct {
 	commands         map[string]cliCommand
-	pokeapiClient    pokeapi.Client
+	pokeapiClient    *pokeapi.Client
 	nextLocationsURL *string
 	prevLocationsURL *string
 }

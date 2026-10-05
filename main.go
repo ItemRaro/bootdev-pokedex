@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"time"
 
-	pokeapi "shiva.ddns.net/marcusvinicius/pokedex/internal"
+	"shiva.ddns.net/marcusvinicius/pokedex/internal/pokeapi"
+)
+
+const (
+	interval = 5 * time.Second
 )
 
 func main() {
-	pokeClient := pokeapi.NewClient(5 * time.Second)
+	pokeClient := pokeapi.NewClient(interval)
 	config := config{
 		commands:      getCommands(),
 		pokeapiClient: pokeClient,

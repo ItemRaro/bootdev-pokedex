@@ -6,10 +6,6 @@ import (
 	"os"
 )
 
-var (
-	locUrl = "https://pokeapi.co/api/v2/location"
-)
-
 type cliCommand struct {
 	name        string
 	description string

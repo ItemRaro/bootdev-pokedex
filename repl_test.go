@@ -13,11 +13,11 @@ func TestCleanInput(t *testing.T) {
 		},
 		{
 			input:    "Lorem Ipsum is simply dummy text",
-			expected: []string{"Lorem", "Ipsum", "is", "simply", "dummy", "text"},
+			expected: []string{"lorem", "ipsum", "is", "simply", "dummy", "text"},
 		},
 		{
 			input:    "   Lorem ipsum dolor sit amet",
-			expected: []string{"Lorem", "ipsum", "dolor", "sit", "amet"},
+			expected: []string{"lorem", "ipsum", "dolor", "sit", "amet"},
 		},
 		{
 			input:    "consectetur adipiscing elit   ",

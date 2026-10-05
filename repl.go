@@ -33,7 +33,5 @@ func startRepl(cfg *config) error {
 }
 
 func cleanInput(text string) []string {
-	noCaps := strings.ToLower(text)
-	words := strings.Fields(noCaps)
-	return words
+	return strings.Fields(strings.ToLower(text))
 }
