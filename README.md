@@ -1,5 +1,8 @@
 # Pokedex
 
+> **Primary repository:** [shiva.ddns.net/marcusvinicius/pokedex](https://shiva.ddns.net/marcusvinicius/pokedex) (self-hosted GitLab).
+> The [GitHub copy](https://github.com/ItemRaro/bootdev-pokedex) is a read-only mirror for the Boot.dev course and is updated automatically.
+
 A command-line Pokedex written in Go. Explore the Pokémon world through an interactive REPL: browse location areas, see which Pokémon live there, try to catch them and inspect the ones you caught.
 
 All data comes from [PokeAPI](https://pokeapi.co). Responses are cached in memory, so revisiting a page or a Pokémon doesn't trigger a new request.
@@ -14,7 +17,7 @@ Built as part of the [Boot.dev](https://www.boot.dev) Go course.
 ## Getting started
 
 ```sh
-git clone <repository-url>
+git clone https://shiva.ddns.net/marcusvinicius/pokedex.git
 cd pokedex
 
 # run directly
