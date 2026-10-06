@@ -19,17 +19,28 @@ func startRepl(cfg *config) error {
 		}
 
 		wordList := cleanInput(scanner.Text())
-		cmd, ok := cfg.commands[wordList[0]]
+		if len(wordList) == 0 {
+			continue
+		}
+
+		command := wordList[0]
+		args := []string{}
+
+		if len(wordList) > 1 {
+			args = wordList[1:]
+		}
+
+		cmd, ok := cfg.commands[command]
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
 		}
 
-		if err := cmd.callback(cfg); err != nil {
+		if err := cmd.callback(cfg, args...); err != nil {
 			fmt.Println(err)
+			continue
 		}
 	}
-
 }
 
 func cleanInput(text string) []string {

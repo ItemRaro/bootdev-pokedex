@@ -3,16 +3,17 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand/v2"
 	"os"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, ...string) error
 }
 
-func commandMapf(cfg *config) error {
+func commandMapf(cfg *config, args ...string) error {
 	locationsResp, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationsURL)
 	if err != nil {
 		return err
@@ -24,10 +25,11 @@ func commandMapf(cfg *config) error {
 	for _, loc := range locationsResp.Results {
 		fmt.Println(loc.Name)
 	}
+
 	return nil
 }
 
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *config, args ...string) error {
 	if cfg.prevLocationsURL == nil {
 		return errors.New("you're on the first page")
 	}
@@ -43,17 +45,61 @@ func commandMapb(cfg *config) error {
 	for _, loc := range locationResp.Results {
 		fmt.Println(loc.Name)
 	}
+
 	return nil
 }
 
-func commandExit(cfg *config) error {
+func commandExplore(cfg *config, args ...string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("location name can't be empty")
+	}
+
+	locationName := args[0]
+	encountersResp, err := cfg.pokeapiClient.ListEncounters(&locationName)
+	if err != nil {
+		return err
+	}
+
+	for _, encounter := range encountersResp.Encounters {
+		fmt.Println(encounter.Pokemon.Name)
+	}
+
+	return nil
+}
+
+func commandCatch(cfg *config, args ...string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("location name can't be empty")
+	}
+
+	pokemonName := args[0]
+	pokemonData, err := cfg.pokeapiClient.GetPokemonData(&pokemonName)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Throwing a Pokeball at " + pokemonData.Name + "...")
+	if catchPokemon(pokemonData.CaptureRate, pokemonData.IsLegendary, pokemonData.IsMythical) {
+		fmt.Println(pokemonData.Name + " was caught!")
+		cfg.caughtPokemons[pokemonData.Name] = pokemonData
+
+		return nil
+	} else {
+		fmt.Println(pokemonData.Name + " escaped!")
+
+		return nil
+	}
+}
+
+func commandExit(cfg *config, args ...string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 
 	os.Exit(0)
+
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, args ...string) error {
 	fmt.Println()
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
@@ -62,6 +108,7 @@ func commandHelp(cfg *config) error {
 		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
 	}
 	fmt.Println()
+
 	return nil
 }
 
@@ -82,10 +129,40 @@ func getCommands() map[string]cliCommand {
 			description: "Get the previous page of locations",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Explore a location. Use explore + location-name",
+			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Try to catch a pokemon. Use catch + pokemon-name",
+			callback:    commandCatch,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
 	}
+}
+
+func catchPokemon(captureRate int, legendary, mythical bool) bool {
+	const (
+		captureRateCap = 255
+		legendaryCap   = 45
+		mythicalCap    = 30
+	)
+
+	if legendary && captureRate > legendaryCap {
+		captureRate = legendaryCap
+	}
+
+	if mythical && captureRate > mythicalCap {
+		captureRate = mythicalCap
+	}
+
+	roll := rand.IntN(captureRateCap + 1)
+
+	return roll < captureRate
 }
