@@ -95,7 +95,7 @@ func commandCatch(cfg *config, args ...string) error {
 
 func commandInspect(cfg *config, args ...string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("location name can't be empty")
+		return fmt.Errorf("pokemon name can't be empty")
 	}
 
 	pokemonName := args[0]
@@ -106,6 +106,21 @@ func commandInspect(cfg *config, args ...string) error {
 	}
 
 	inspectPokemon(pokemon)
+
+	return nil
+}
+
+func commandPokedex(cfg *config, args ...string) error {
+	if len(cfg.caughtPokemons) <= 0 {
+		fmt.Println("your Pokedex is empty! Catch some Pokemons!")
+
+		return nil
+	}
+
+	fmt.Println("Your Pokedex:")
+	for _, pokemon := range cfg.caughtPokemons {
+		fmt.Printf("  -%s\n", pokemon.Name)
+	}
 
 	return nil
 }
@@ -162,6 +177,11 @@ func getCommands() map[string]cliCommand {
 			name:        "inspect",
 			description: "Inspect caught pokemon. Use inspect + pokemon-name",
 			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Lists your capture pokemons",
+			callback:    commandPokedex,
 		},
 		"exit": {
 			name:        "exit",
