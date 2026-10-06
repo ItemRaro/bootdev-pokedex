@@ -5,12 +5,13 @@ import (
 	"fmt"
 )
 
-// ListLocationEncounters -
+// ListEncounters returns the pokemon that can be found in a location area.
 func (c *Client) ListEncounters(locationName *string) (RespShallowEncounters, error) {
-	url := baseURL + "/location-area/" + *locationName
 	if locationName == nil {
 		return RespShallowEncounters{}, fmt.Errorf("location name can't be blank")
 	}
+
+	url := c.baseUrl + "/location-area/" + *locationName
 
 	if cachedEncounters, _ := c.pokecache.Get(url); cachedEncounters != nil {
 		encountersResp := RespShallowEncounters{}

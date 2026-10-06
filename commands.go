@@ -9,12 +9,14 @@ import (
 	"shiva.ddns.net/marcusvinicius/pokedex/internal/pokeapi"
 )
 
+// cliCommand describes a REPL command and the function that runs it.
 type cliCommand struct {
 	name        string
 	description string
 	callback    func(*config, ...string) error
 }
 
+// commandMapf prints the next page of location areas.
 func commandMapf(cfg *config, args ...string) error {
 	locationsResp, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationsURL)
 	if err != nil {
@@ -31,6 +33,7 @@ func commandMapf(cfg *config, args ...string) error {
 	return nil
 }
 
+// commandMapb prints the previous page of location areas.
 func commandMapb(cfg *config, args ...string) error {
 	if cfg.prevLocationsURL == nil {
 		return errors.New("you're on the first page")
@@ -51,6 +54,7 @@ func commandMapb(cfg *config, args ...string) error {
 	return nil
 }
 
+// commandExplore lists the pokemon found in a location area.
 func commandExplore(cfg *config, args ...string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("location name can't be empty")
@@ -69,9 +73,10 @@ func commandExplore(cfg *config, args ...string) error {
 	return nil
 }
 
+// commandCatch tries to catch a pokemon and adds it to the pokedex on success.
 func commandCatch(cfg *config, args ...string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("location name can't be empty")
+		return fmt.Errorf("pokemon name can't be empty")
 	}
 
 	pokemonName := args[0]
@@ -93,6 +98,7 @@ func commandCatch(cfg *config, args ...string) error {
 	}
 }
 
+// commandInspect shows the details of a caught pokemon.
 func commandInspect(cfg *config, args ...string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("pokemon name can't be empty")
@@ -110,6 +116,7 @@ func commandInspect(cfg *config, args ...string) error {
 	return nil
 }
 
+// commandPokedex lists every caught pokemon.
 func commandPokedex(cfg *config, args ...string) error {
 	if len(cfg.caughtPokemons) <= 0 {
 		fmt.Println("your Pokedex is empty! Catch some Pokemons!")
@@ -125,6 +132,7 @@ func commandPokedex(cfg *config, args ...string) error {
 	return nil
 }
 
+// commandHelp prints the available commands.
 func commandHelp(cfg *config, args ...string) error {
 	fmt.Println()
 	fmt.Println("Welcome to the Pokedex!")
@@ -138,6 +146,7 @@ func commandHelp(cfg *config, args ...string) error {
 	return nil
 }
 
+// commandExit closes the program.
 func commandExit(cfg *config, args ...string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 
@@ -146,6 +155,7 @@ func commandExit(cfg *config, args ...string) error {
 	return nil
 }
 
+// getCommands returns every command available in the REPL, keyed by name.
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"help": {
@@ -191,11 +201,13 @@ func getCommands() map[string]cliCommand {
 	}
 }
 
+// catchPokemon rolls a 0-255 die against the capture rate (higher is easier).
+// Legendary and mythical pokemon have capped rates so they are never too easy.
 func catchPokemon(captureRate int, legendary, mythical bool) bool {
 	const (
-		captureRateCap = 255
-		legendaryCap   = 45
-		mythicalCap    = 30
+		captureRateCap = 255 // highest capture rate in PokeAPI
+		legendaryCap   = 45  // ~17.6% max chance
+		mythicalCap    = 30  // ~11.7% max chance
 	)
 
 	if legendary && captureRate > legendaryCap {
@@ -211,6 +223,7 @@ func catchPokemon(captureRate int, legendary, mythical bool) bool {
 	return roll < captureRate
 }
 
+// inspectPokemon prints a pokemon's name, size, stats and types.
 func inspectPokemon(pokemonData pokeapi.PokemonData) {
 	fmt.Println("Name: " + pokemonData.Name)
 	fmt.Printf("Height: %d\n", pokemonData.Height)

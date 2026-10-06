@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// startRepl reads commands from stdin and runs them until exit.
 func startRepl(cfg *config) error {
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -23,6 +24,7 @@ func startRepl(cfg *config) error {
 			continue
 		}
 
+		// First word is the command, the rest are its arguments.
 		command := wordList[0]
 		args := []string{}
 
@@ -43,6 +45,7 @@ func startRepl(cfg *config) error {
 	}
 }
 
+// cleanInput lowercases text and splits it into words.
 func cleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(text))
 }

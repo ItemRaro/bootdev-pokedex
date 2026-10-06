@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	requestTimeout = 5 * time.Second
-	cacheInterval  = 10 * time.Minute
+	requestTimeout = 5 * time.Second  // limit for each HTTP request
+	cacheInterval  = 10 * time.Minute // how long API responses stay cached
 )
 
+// main wires up the API client and starts the REPL.
 func main() {
 	pokeClient := pokeapi.NewClient(requestTimeout, cacheInterval)
 	config := config{

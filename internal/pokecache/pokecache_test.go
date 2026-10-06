@@ -2,6 +2,7 @@ package pokecache
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 )
@@ -57,5 +58,72 @@ func TestReapLoop(t *testing.T) {
 	if ok {
 		t.Errorf("expected to not find key")
 		return
+	}
+}
+
+func TestGetMissingKey(t *testing.T) {
+	cache := NewCache(5 * time.Second)
+
+	val, ok := cache.Get("https://example.com/missing")
+	if ok {
+		t.Errorf("expected to not find key")
+		return
+	}
+	if val != nil {
+		t.Errorf("expected nil value, got %s", val)
+		return
+	}
+}
+
+func TestAddOverwrite(t *testing.T) {
+	cache := NewCache(5 * time.Second)
+	cache.Add("https://example.com", []byte("old"))
+	cache.Add("https://example.com", []byte("new"))
+
+	val, ok := cache.Get("https://example.com")
+	if !ok {
+		t.Errorf("expected to find key")
+		return
+	}
+	if string(val) != "new" {
+		t.Errorf("expected new, got %s", val)
+		return
+	}
+}
+
+// TestReapLoopKeepsFreshEntries checks that entries survive until the interval passes.
+func TestReapLoopKeepsFreshEntries(t *testing.T) {
+	const interval = 100 * time.Millisecond
+	cache := NewCache(interval)
+	cache.Add("https://example.com", []byte("testdata"))
+
+	time.Sleep(interval / 5)
+
+	if _, ok := cache.Get("https://example.com"); !ok {
+		t.Errorf("expected to find key before the interval")
+		return
+	}
+}
+
+// TestConcurrentAccess only proves something when run with "go test -race".
+func TestConcurrentAccess(t *testing.T) {
+	const goroutines = 100
+	cache := NewCache(5 * time.Second)
+
+	var wg sync.WaitGroup
+	for i := range goroutines {
+		wg.Go(func() {
+			key := fmt.Sprintf("https://example.com/%d", i)
+			cache.Add(key, []byte("testdata"))
+			cache.Get(key)
+		})
+	}
+	wg.Wait()
+
+	for i := range goroutines {
+		key := fmt.Sprintf("https://example.com/%d", i)
+		if _, ok := cache.Get(key); !ok {
+			t.Errorf("expected to find key %s", key)
+		}
 	}
 }

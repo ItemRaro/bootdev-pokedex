@@ -1,6 +1,6 @@
 package pokeapi
 
-// RespShallowLocations -
+// RespShallowLocations is a page of location areas.
 type RespShallowLocations struct {
 	Count    int     `json:"count"`
 	Next     *string `json:"next"`
@@ -11,6 +11,7 @@ type RespShallowLocations struct {
 	} `json:"results"`
 }
 
+// RespShallowEncounters lists the pokemon found in a location area.
 type RespShallowEncounters struct {
 	Encounters []struct {
 		Pokemon struct {
@@ -20,14 +21,15 @@ type RespShallowEncounters struct {
 	} `json:"pokemon_encounters"`
 }
 
+// PokemonData combines fields from the /pokemon and /pokemon-species endpoints.
 type PokemonData struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	BaseExp     int    `json:"base_experience"`
-	CaptureRate int    `json:"capture_rate"`
-	IsBaby      bool   `json:"is_baby"`
-	IsLegendary bool   `json:"is_legendary"`
-	IsMythical  bool   `json:"is_mythical"`
+	CaptureRate int    `json:"capture_rate"` // from /pokemon-species
+	IsBaby      bool   `json:"is_baby"`      // from /pokemon-species
+	IsLegendary bool   `json:"is_legendary"` // from /pokemon-species
+	IsMythical  bool   `json:"is_mythical"`  // from /pokemon-species
 	Height      int    `json:"height"`
 	Weight      int    `json:"weight"`
 	Stats       []struct {
