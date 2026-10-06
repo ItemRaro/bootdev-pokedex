@@ -18,28 +18,24 @@ func (c *Client) GetPokemonData(pokemonName *string) (PokemonData, error) {
 		return pokemonDataResp, nil
 	}
 
+	pokemonDataResp := PokemonData{}
+
 	data, err := c.makeGetRequest(url)
 	if err != nil {
 		return PokemonData{}, nil
 	}
 
-	shallowPokemonDataResp := RespShallowPokemonData{}
-	if err := json.Unmarshal(data, &shallowPokemonDataResp); err != nil {
+	if err := json.Unmarshal(data, &pokemonDataResp); err != nil {
 		return PokemonData{}, err
 	}
 
-	data, err = c.makeGetRequest(shallowPokemonDataResp.Species.URL)
+	data, err = c.makeGetRequest(pokemonDataResp.Species.URL)
 	if err != nil {
 		return PokemonData{}, nil
 	}
-	shallowPokemonSpeciesResp := RespShallowSpeciesData{}
-	if err := json.Unmarshal(data, &shallowPokemonSpeciesResp); err != nil {
-		return PokemonData{}, err
-	}
 
-	pokemonDataResp := PokemonData{
-		shallowPokemonDataResp,
-		shallowPokemonSpeciesResp,
+	if err := json.Unmarshal(data, &pokemonDataResp); err != nil {
+		return PokemonData{}, err
 	}
 
 	data, err = json.Marshal(pokemonDataResp)

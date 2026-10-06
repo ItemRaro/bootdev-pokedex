@@ -20,12 +20,31 @@ type RespShallowEncounters struct {
 	} `json:"pokemon_encounters"`
 }
 
-type RespShallowPokemonData struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	BaseExp int    `json:"base_experience"`
-	Height  int    `json:"height"`
-	Weight  int    `json:"wight"`
+type PokemonData struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	BaseExp     int    `json:"base_experience"`
+	CaptureRate int    `json:"capture_rate"`
+	IsBaby      bool   `json:"is_baby"`
+	IsLegendary bool   `json:"is_legendary"`
+	IsMythical  bool   `json:"is_mythical"`
+	Height      int    `json:"height"`
+	Weight      int    `json:"weight"`
+	Stats       []struct {
+		BaseStat int `json:"base_stat"`
+		Effort   int `json:"effort"`
+		Stat     struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"stat"`
+	} `json:"stats"`
+	Types []struct {
+		Slot int `json:"slot"`
+		Type struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"type"`
+	} `json:"types"`
 	Species struct {
 		Name string `json:"name"`
 		URL  string `json:"url"`
@@ -36,22 +55,4 @@ type RespShallowPokemonData struct {
 			URL  string `json:"url"`
 		} `json:"ability"`
 	} `json:"abilities"`
-	Types []struct {
-		Type struct {
-			Name string `json:"name"`
-			URL  string `json:"url"`
-		} `json:"type"`
-	} `json:"types"`
-}
-
-type RespShallowSpeciesData struct {
-	CaptureRate int  `json:"capture_rate"`
-	IsBaby      bool `json:"is_baby"`
-	IsLegendary bool `json:"is_legendary"`
-	IsMythical  bool `json:"is_mythical"`
-}
-
-type PokemonData struct {
-	RespShallowPokemonData
-	RespShallowSpeciesData
 }

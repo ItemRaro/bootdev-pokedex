@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+
+	"shiva.ddns.net/marcusvinicius/pokedex/internal/pokeapi"
 )
 
 type cliCommand struct {
@@ -91,10 +93,19 @@ func commandCatch(cfg *config, args ...string) error {
 	}
 }
 
-func commandExit(cfg *config, args ...string) error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
+func commandInspect(cfg *config, args ...string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("location name can't be empty")
+	}
 
-	os.Exit(0)
+	pokemonName := args[0]
+	pokemon, ok := cfg.caughtPokemons[pokemonName]
+	if !ok {
+		fmt.Println("you have not caught that pokemon")
+		return nil
+	}
+
+	inspectPokemon(pokemon)
 
 	return nil
 }
@@ -108,6 +119,14 @@ func commandHelp(cfg *config, args ...string) error {
 		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
 	}
 	fmt.Println()
+
+	return nil
+}
+
+func commandExit(cfg *config, args ...string) error {
+	fmt.Println("Closing the Pokedex... Goodbye!")
+
+	os.Exit(0)
 
 	return nil
 }
@@ -139,6 +158,11 @@ func getCommands() map[string]cliCommand {
 			description: "Try to catch a pokemon. Use catch + pokemon-name",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect caught pokemon. Use inspect + pokemon-name",
+			callback:    commandInspect,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -165,4 +189,18 @@ func catchPokemon(captureRate int, legendary, mythical bool) bool {
 	roll := rand.IntN(captureRateCap + 1)
 
 	return roll < captureRate
+}
+
+func inspectPokemon(pokemonData pokeapi.PokemonData) {
+	fmt.Println("Name: " + pokemonData.Name)
+	fmt.Printf("Height: %d\n", pokemonData.Height)
+	fmt.Printf("Weight: %d\n", pokemonData.Weight)
+	fmt.Println("Stats:")
+	for i := range pokemonData.Stats {
+		fmt.Printf("  -%s: %d\n", pokemonData.Stats[i].Stat.Name, pokemonData.Stats[i].BaseStat)
+	}
+	fmt.Println("Types:")
+	for i := range pokemonData.Types {
+		fmt.Printf("  -%s\n", pokemonData.Types[i].Type.Name)
+	}
 }
