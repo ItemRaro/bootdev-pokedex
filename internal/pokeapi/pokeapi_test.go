@@ -36,7 +36,7 @@ func newTestClient(t *testing.T) (*Client, map[string]int) {
 
 		if route == "/pokemon/broken" {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"name":"broken"}`))
+			_, _ = w.Write([]byte(`{"name":"broken"}`))
 			return
 		}
 
@@ -55,7 +55,7 @@ func newTestClient(t *testing.T) (*Client, map[string]int) {
 
 		// Point the fixtures' links at this fake server instead of the real API.
 		body := strings.ReplaceAll(string(data), realAPI, "http://"+r.Host)
-		w.Write([]byte(body))
+		_, _ = w.Write([]byte(body))
 	})
 
 	srv := httptest.NewServer(handler)

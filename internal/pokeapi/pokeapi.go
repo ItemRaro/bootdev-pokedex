@@ -39,7 +39,7 @@ func (c *Client) makeGetRequest(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Anything other than 200 (e.g. 404 for an unknown pokemon) is an error.
 	if resp.StatusCode != http.StatusOK {

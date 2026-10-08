@@ -1,0 +1,114 @@
+# GitLab CI configuration for pokedex
+#
+# Stages:
+#   prepare - download Go modules
+#   fmt     - gofmt check
+#   vet     - go vet
+#   lint    - golangci-lint (.golangci.yml)
+#   test    - unit tests with race detector + coverage
+#   build   - compile the CLI for linux/amd64
+#
+# Pure stdlib project (no external deps, no go.sum) -- no CGO needed.
+#
+# All jobs run on the shared Go runner (tags: docker, golang).
+image: golang:1.27.1-bookworm
+
+variables:
+  GO111MODULE: 'on'
+  GOPROXY: https://proxy.golang.org,direct
+  GOPATH: $CI_PROJECT_DIR/.go
+  GOMODCACHE: $CI_PROJECT_DIR/.go/pkg/mod
+  GOCACHE: $CI_PROJECT_DIR/.cache/go-build
+
+stages:
+  - prepare
+  - fmt
+  - vet
+  - lint
+  - test
+  - build
+
+# Pipelines run for merge requests and for pushes to main.
+.rules: &rules
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+cache:
+  key:
+    files: [go.mod]
+  paths:
+    - .go/pkg/mod/
+    - .cache/go-build/
+
+go_mod_download:
+  stage: prepare
+  tags: [docker, golang]
+  script:
+    - go mod download
+  <<: *rules
+
+fmt:
+  stage: fmt
+  needs: [go_mod_download]
+  tags: [docker, golang]
+  script:
+    - |
+      UNFORMATTED=$(gofmt -l .)
+      if [ -n "$UNFORMATTED" ]; then
+        echo "The following files are not gofmt-formatted:"
+        echo "$UNFORMATTED"
+        gofmt -d .
+        exit 1
+      fi
+  <<: *rules
+
+vet:
+  stage: vet
+  needs: [go_mod_download]
+  tags: [docker, golang]
+  script:
+    - go vet ./...
+  <<: *rules
+
+lint:
+  stage: lint
+  image: golangci/golangci-lint:latest-alpine
+  needs: []
+  tags: [docker, golang]
+  variables:
+    GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.cache/golangci-lint
+  cache:
+    key:
+      files: [.golangci.yml]
+    paths: [.cache/golangci-lint/]
+  script:
+    - golangci-lint run --timeout=5m
+  <<: *rules
+
+test:
+  stage: test
+  needs: [go_mod_download]
+  tags: [docker, golang]
+  script:
+    - go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
+    - go tool cover -func=coverage.out | tail -1
+  coverage: /total:\s+\(statements\)\s+(\d+\.\d+%)/
+  artifacts:
+    when: always
+    paths: [coverage.out]
+    expire_in: 1 week
+  <<: *rules
+
+build_linux:
+  stage: build
+  needs: [test, vet, fmt]
+  tags: [docker, golang]
+  script:
+    - mkdir -p bin
+    - go build -buildvcs=false -o bin/pokedex-linux-amd64 .
+  artifacts:
+    name: $CI_PROJECT_NAME-linux-$CI_COMMIT_SHORT_SHA
+    paths: [bin/]
+    expire_in: 2 weeks
+  <<: *rules
